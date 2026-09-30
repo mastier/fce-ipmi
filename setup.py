@@ -29,5 +29,10 @@ setuptools.setup(
         ],
     },
     setup_requires=["wheel"],
-    install_requires=["click>=7.1.2", "PyYAML>=5.3.1", "colorlog>=4.6.2"],
+    install_requires=[
+        "click>=7.1.2",
+        "PyYAML>=5.3.1",
+        "colorlog>=4.6.2",
+        "python-hcl2",
+    ],
 )

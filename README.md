@@ -53,6 +53,34 @@ Alternatively, the file can be specified in the configuration file
 (`~/.local/share/fce-ipmi/config`) as a vaulue of the key
 `machine-config-path`. [NOT IMPLEMENTED]
 
+## HCL machine config
+
+Besides YAML, `fce-ipmi` can read machines from an HCL file (e.g. `machines.hcl`).
+If `./config/nodes.yaml` is not present, `./machines.hcl` in the current directory
+is used. You can also point explicitly to the HCL file with `-f, --machine-config`.
+
+The HCL file is expected to have the following structure:
+
+    machines = {
+      "machine-01" = {
+        properties = {
+          power_type    = "ipmi"
+          power_address = "172.31.31.31"
+          power_user    = "Administrator"
+          ...
+        }
+      }
+    }
+
+BMC passwords are resolved for each machine in this order:
+
+1. `power_password` in the machine's `properties`.
+2. The `--bmc-passwords` file (default `./secrets/bmc_passwords`), an HCL file
+   listing `bmc_passwords = { "machine-01" = "PASSWORD" }`.
+3. The `BMC_PASSWORD` environment variable: either a single password shared by
+   all machines, or a JSON object `{"machine-01": "PASSWORD"}` for per-host
+   passwords.
+
 This tool supports bash completion. Press `tab` key twice to display
 available commands, parameters, machine names etc. [NOT IMPLEMENTED]
 
@@ -62,7 +90,9 @@ available commands, parameters, machine names etc. [NOT IMPLEMENTED]
 
 `-s, --dry-run`        Simulate running the command.
 
-`-f, --machine-config` Path to the YAML file with machines' configuration.
+`-f, --machine-config` Path to the YAML or HCL file with machines' configuration.
+
+`--bmc-passwords`   Path to the HCL file with BMC passwords (used with HCL machine config).
 
 `--no-color`           Disable colored output.
 

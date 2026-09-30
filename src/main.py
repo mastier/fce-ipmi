@@ -45,8 +45,13 @@ def print_version(ctx, param, value):
 @click.option(
     "-f",
     "--machine-config",
-    default="./config/nodes.yaml",
-    help="Path to the YAML file with machines' configuration.",
+    default=None,
+    help="Path to the YAML or HCL file with machines' configuration.",
+)
+@click.option(
+    "--bmc-passwords",
+    default="./secrets/bmc_passwords",
+    help="Path to the HCL file with BMC passwords (used with HCL machine config).",
 )
 @click.option(
     "--no-color",
@@ -71,7 +76,7 @@ def print_version(ctx, param, value):
     help="Print program version.",
 )
 @click.pass_context
-def cli(ctx, debug, dry_run, machine_config, no_color, verbose):
+def cli(ctx, debug, dry_run, machine_config, bmc_passwords, no_color, verbose):
     """Define root of all commands."""
     # Ensure that ctx.obj exists and is a dict (in case `cli()` is called
     # by means other than the `if __name__ == "__main__"` block)
@@ -85,6 +90,7 @@ def cli(ctx, debug, dry_run, machine_config, no_color, verbose):
     application = Application(
         debug=debug,
         machine_config=machine_config,
+        bmc_passwords=bmc_passwords,
         dry_run=dry_run,
         no_color=no_color,
         verbose=verbose,

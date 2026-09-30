@@ -4,8 +4,10 @@ The class implements core logic of the program.
 """
 
 import fnmatch
+import json
 import logging
 import logging.handlers
+import os
 from enum import Enum
 from typing import Tuple
 
@@ -42,6 +44,7 @@ class Application:
         debug=False,
         dry_run=False,
         machine_config="",
+        bmc_passwords="",
         no_color=False,
         verbose=False,
     ):
@@ -49,14 +52,23 @@ class Application:
         # Read global options
         self.debug = debug
         self.dry_run = dry_run
-        self.machine_config = (
-            machine_config if machine_config else self.DEFAULT_MACHINE_CONFIG_PATH
-        )
+        self.machine_config = machine_config
+        self.bmc_passwords = bmc_passwords
         self.no_color = no_color
         self.verbose = verbose
 
         # Configure logger
         self.logger = self._get_logger() if no_color else self._get_colored_logger()
+
+        # If no machine config file was given, use the YAML default, falling
+        # back to machines.hcl in the current directory.
+        if not self.machine_config:
+            if not os.path.exists(self.DEFAULT_MACHINE_CONFIG_PATH) and os.path.exists(
+                "./machines.hcl"
+            ):
+                self.machine_config = "./machines.hcl"
+            else:
+                self.machine_config = self.DEFAULT_MACHINE_CONFIG_PATH
 
     def _get_logger(self):
         """Create and return a logger object."""
@@ -105,11 +117,14 @@ class Application:
         return logger
 
     def _read_machines_config(self) -> dict:
-        """Read YAML machine config file.
+        """Read YAML or HCL machine config file.
 
         :return Dictionary with machines' details or None if details
                 could not be retrieved.
         """
+        if self.machine_config.endswith(".hcl"):
+            return self._load_hcl(self.machine_config)
+
         # Python representation of the YAML machine config file
         machines = None
 
@@ -152,6 +167,105 @@ class Application:
             machines_dict = machines
 
         return machines_dict
+
+    @staticmethod
+    def _strip_quotes(value):
+        """Strip surrounding double quotes from HCL strings."""
+        if isinstance(value, list):
+            return [Application._strip_quotes(item) for item in value]
+        if isinstance(value, str) and value.startswith('"') and value.endswith('"'):
+            return value[1:-1]
+        return value
+
+    def _bmc_password_from_file(self, name: str):
+        """Look up a machine's password in the BMC passwords HCL file."""
+        if not self.bmc_passwords or not os.path.exists(self.bmc_passwords):
+            return None
+        try:
+            import hcl2
+
+            with open(self.bmc_passwords) as file:
+                data = hcl2.load(file)
+            for raw_name, raw_value in data.get("bmc_passwords", {}).items():
+                if self._strip_quotes(raw_name) == name:
+                    return self._strip_quotes(raw_value)
+        except (FileNotFoundError, PermissionError) as e:
+            self.logger.error(f"Cannot open BMC passwords file: '{self.bmc_passwords}'")
+            self.logger.error(e)
+        except Exception as e:
+            self.logger.error(f"Error in BMC passwords file: {e}")
+        return None
+
+    def _bmc_password_from_env(self, name: str):
+        """Look up a machine's password in the BMC_PASSWORD env variable."""
+        env_password = os.environ.get("BMC_PASSWORD")
+        if not env_password:
+            return None
+        if env_password.startswith("{"):
+            try:
+                passwords = json.loads(env_password)
+                return passwords.get(name) if isinstance(passwords, dict) else None
+            except ValueError:
+                return None
+        return env_password
+
+    def _bmc_password(self, name: str, machine: dict):
+        """Resolve the BMC password for a machine from HCL config sources."""
+        for source in (
+            machine.get("power_password"),
+            self._bmc_password_from_file(name),
+            self._bmc_password_from_env(name),
+        ):
+            if source:
+                return source
+
+        self.logger.error(f"No BMC password found for machine '{name}'")
+        return None
+
+    def _load_hcl(self, path: str) -> dict:
+        """Read HCL machine config file."""
+        try:
+            import hcl2
+        except ImportError:
+            self.logger.error(
+                "python-hcl2 package is required to read HCL machine config files"
+            )
+            return None
+
+        try:
+            with open(path) as file:
+                data = hcl2.load(file)
+        except (FileNotFoundError, PermissionError, NotADirectoryError) as e:
+            self.logger.error(f"Cannot open machines configuration file: '{path}'")
+            self.logger.error(e)
+            return None
+        except Exception as e:
+            self.logger.error(f"Error in machines configuration file: {e}")
+            return None
+
+        machines = {}
+        for raw_name, raw_machine in data.get("machines", {}).items():
+            name = self._strip_quotes(raw_name)
+            properties = raw_machine.get("properties", {})
+            machine = {
+                self._strip_quotes(key): self._strip_quotes(value)
+                for key, value in properties.items()
+            }
+            machine["bmc_user"] = machine.get("power_user", "")
+            machine["bmc_address"] = machine.get("power_address", "")
+            if not machine["bmc_user"] or not machine["bmc_address"]:
+                self.logger.error(
+                    f"Machine '{name}' in '{path}' is missing power_user or "
+                    "power_address"
+                )
+                return None
+            machine["bmc_password"] = self._bmc_password(name, machine)
+            if machine["bmc_password"] is None:
+                return None
+            machines[name] = machine
+
+        self.logger.debug(f"Read machines from {path}: {machines}")
+        return machines
 
     def _is_glob_pattern(self, text: str) -> bool:
         """Check if the string is a glob pattern."""
@@ -351,7 +465,7 @@ class Application:
             )
         )
 
-        # Read YAML file containing BMC details of machines
+        # Read file containing BMC details of machines
         machines_from_config = self._read_machines_config()
         if machines_from_config:
             self.machines = machines_from_config
