@@ -1,5 +1,5 @@
 name: fce-ipmi
-version: "0.2.0" 
+version: "0.3.0"
 summary: fce-ipmi simplifies interaction with `ipmitool`
 description: |
   `fce-ipmi` is a wrapper for `ipmitool`. Therefore you must have `ipmitool`
@@ -17,7 +17,7 @@ description: |
 
   This tool supports bash completion. Press `tab` key twice to display
   available commands, parameters, machine names etc. [NOT IMPLEMENTED]
-base: core18
+base: core26
 confinement: strict
 
 parts:
