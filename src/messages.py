@@ -1,4 +1,5 @@
 """Command line help messages."""
+
 MAIN_HELP = """This tool is a wrapper for `ipmitool` utility.
 
 The wrapper pulls necessary information about the machines, such as BMC
@@ -85,8 +86,7 @@ properties, e.g. tags, zone, etc.
 Similarly to `--include` option, this option also supports multiple
 instances (joined as logical 'OR') and comma-separated properties."""
 
-POWER_ON_ACTION_LONG_HELP = (
-    """Power on one or more machines.
+POWER_ON_ACTION_LONG_HELP = """Power on one or more machines.
 
 If MACHINE-NAME is not specified, the action is executed against all
 machines.
@@ -102,12 +102,9 @@ its full name. For example, if the machine's full name is
 `compute-1.dc.example.com` it is enough to refer to this machine as
 `compute-1`.
 
-"""
-    + POWER_COMMANDS_OPTIONS
-)
+""" + POWER_COMMANDS_OPTIONS
 
-POWER_OFF_ACTION_LONG_HELP = (
-    """Power off one or more machines.
+POWER_OFF_ACTION_LONG_HELP = """Power off one or more machines.
 
 If MACHINE-NAME is not specified, the action is executed against all
 machines.
@@ -123,12 +120,9 @@ its full name. For example, if the machine's full name is
 `compute-1.dc.example.com` it is enough to refer to this machine as
 `compute-1`.
 
-"""
-    + POWER_COMMANDS_OPTIONS
-)
+""" + POWER_COMMANDS_OPTIONS
 
-POWER_CYCLE_ACTION_LONG_HELP = (
-    """Power cycle one or more machines.
+POWER_CYCLE_ACTION_LONG_HELP = """Power cycle one or more machines.
 
 If MACHINE-NAME is not specified, the action is executed against all
 machines.
@@ -144,12 +138,9 @@ its full name. For example, if the machine's full name is
 `compute-1.dc.example.com` it is enough to refer to this machine as
 `compute-1`.
 
-"""
-    + POWER_COMMANDS_OPTIONS
-)
+""" + POWER_COMMANDS_OPTIONS
 
-POWER_STATUS_ACTION_LONG_HELP = (
-    """Read current power state of one or more machines.
+POWER_STATUS_ACTION_LONG_HELP = """Read current power state of one or more machines.
 
 If MACHINE-NAME is not specified, the action is executed against all
 machines.
@@ -165,9 +156,7 @@ its full name. For example, if the machine's full name is
 `compute-1.dc.example.com` it is enough to refer to this machine as
 `compute-1`.
 
-"""
-    + POWER_COMMANDS_OPTIONS
-)
+""" + POWER_COMMANDS_OPTIONS
 
 #
 # bootdev
@@ -196,8 +185,7 @@ Set boot to disk for all machines in availability zones `AZ1` and `AZ2`
 
 BOOTDEV_COMMANDS_OPTIONS = POWER_COMMANDS_OPTIONS
 
-BOOTDEV_DISK_ACTION_LONG_HELP = (
-    """Force boot from default hard drive.
+BOOTDEV_DISK_ACTION_LONG_HELP = """Force boot from default hard drive.
 
 If MACHINE-NAME is not specified, the action is executed against all
 machines.
@@ -213,12 +201,9 @@ its full name. For example, if the machine's full name is
 `compute-1.dc.example.com` it is enough to refer to this machine as
 `compute-1`.
 
-"""
-    + POWER_COMMANDS_OPTIONS
-)
+""" + POWER_COMMANDS_OPTIONS
 
-BOOTDEV_BIOS_ACTION_LONG_HELP = (
-    """Force boot into BIOS setup.
+BOOTDEV_BIOS_ACTION_LONG_HELP = """Force boot into BIOS setup.
 
 If MACHINE-NAME is not specified, the action is executed against all
 machines.
@@ -234,12 +219,9 @@ its full name. For example, if the machine's full name is
 `compute-1.dc.example.com` it is enough to refer to this machine as
 `compute-1`.
 
-"""
-    + POWER_COMMANDS_OPTIONS
-)
+""" + POWER_COMMANDS_OPTIONS
 
-BOOTDEV_PXE_ACTION_LONG_HELP = (
-    """Force PXE boot.
+BOOTDEV_PXE_ACTION_LONG_HELP = """Force PXE boot.
 
 If MACHINE-NAME is not specified, the action is executed against all
 machines.
@@ -255,9 +237,7 @@ its full name. For example, if the machine's full name is
 `compute-1.dc.example.com` it is enough to refer to this machine as
 `compute-1`.
 
-"""
-    + POWER_COMMANDS_OPTIONS
-)
+""" + POWER_COMMANDS_OPTIONS
 
 #
 # console

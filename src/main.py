@@ -14,7 +14,6 @@ import messages
 
 import version
 
-
 VERSION = version.VERSION
 
 CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
